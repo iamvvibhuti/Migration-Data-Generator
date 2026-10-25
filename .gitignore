@@ -1,0 +1,23 @@
+Python environment and cache
+
+.venv/ venv/ pycache/ *.py[cod]
+
+Credentials and secrets
+
+service-account.json -service-account.json *.pem *.key .env
+
+Real account lists and local configuration
+
+users.txt config.local.*
+
+Generated migration inventories and audit logs
+
+gmail_inventory.csv drive_inventory.csv migration_test_audit.csv *_inventory.csv *_audit.csv
+
+Local backups and logs
+
+backup_before_full_run/ *.log
+
+Editor and operating system files
+
+.vscode/ .idea/ .DS_Store Thumbs.db
