@@ -1,59 +1,63 @@
-Google Workspace Migration Test Data Generator
+Workspace Migration Test Data Generator
 
-Generate synthetic Gmail messages and Google Drive files to test Google Workspace migrations using CloudM Migrate.
+1. Project Overview
 
-1. Project objectives
+This project generates synthetic email messages and cloud storage files to test workspace migrations. It helps administrators populate authorized source test accounts and create CSV inventories that can be opened in Microsoft Excel.
 
-This project helps administrators populate authorized source Workspace test accounts with synthetic data and create CSV inventories that can be opened in Microsoft Excel.
+The inventories record generated message and file metadata to support migration validation, auditing, and troubleshooting.
 
-The inventories record generated message and file metadata to support migration testing and troubleshooting.
+Current Capabilities
 
-Current capabilities
-Generate synthetic Gmail messages using the Gmail API.
-Create Gmail labels and apply selected message labels.
-Generate messages with synthetic CSV attachments.
-Create Drive folders and synthetic TXT, CSV, JSON, PDF, and binary files.
+Generate synthetic email messages through an email API.
+Create email labels and apply selected labels to messages.
+Generate email messages with synthetic CSV attachments.
+Create cloud storage folders and synthetic TXT, CSV, JSON, PDF, and binary files.
 Calculate SHA-256 hashes of generated content.
-Record returned Gmail message IDs and Drive file IDs.
-Export Gmail and Drive inventories to CSV.
+Record returned email message IDs and storage file IDs.
+Export email and storage inventories to CSV.
 Support one or more configured test accounts.
-Current limitations
+Current Limitations
 
-The current advanced script does not provide complete duplicate protection, automatic recovery after partial failures, genuine Gmail conversation threads, or implemented Drive-sharing scenarios. Its inventory CSV files are overwritten on each execution.
+The current advanced script does not provide complete duplicate protection, automatic recovery after partial failures, genuine email conversation threads, or implemented file-sharing scenarios.
 
-Do not assume a batch is safe to repeat after an error. Verify what was created before restarting.
+Inventory CSV files are overwritten on each execution.
+
+Important: Do not assume a batch is safe to repeat after an error. Verify what was created before restarting.
 
 2. Requirements
+
 A Windows computer.
 Python 3.10 or later.
-Authorized administrator access to the source Google Workspace domain.
-A Google Cloud project with the Gmail API and Drive API enabled.
+Authorized administrator access to the source workspace.
+A cloud project with the required email and storage APIs enabled.
 A service account configured for domain-wide delegation.
-Appropriate domain-wide delegation scopes authorized by a Workspace Super Admin.
+Appropriate delegation permissions authorized by a workspace super administrator.
 One or more authorized source test accounts.
-
 Use synthetic data only. Do not use real employee messages, customer information, or confidential documents.
 
-3. Google Cloud configuration
-Create or select a dedicated Google Cloud project.
-Enable the Gmail API and Google Drive API.
+3. Cloud Configuration
+
+Create or select a dedicated cloud project.
+Enable the required email and cloud storage APIs.
 Create a dedicated service account.
 Enable domain-wide delegation for the service account.
 Record the service account's numeric OAuth client ID.
-In the source Workspace Admin console, open Security > Access and data control > API controls > Manage Domain Wide Delegation.
-Authorize the client ID with the OAuth scopes required by the script:
+In the source workspace administration console, locate the domain-wide delegation settings under the security and API access controls.
+Authorize the client ID with the following OAuth scopes required by the script:
 https://www.googleapis.com/auth/gmail.insert
 https://www.googleapis.com/auth/gmail.modify
 https://www.googleapis.com/auth/drive.file
-Review these permissions against your organization's security policy before authorizing them.
+Review the requested permissions against your organization's security policy before authorizing them.
+The script uses delegated access to act as configured users. Authorize this access only for projects and accounts you are permitted to administer.
 
-The script uses delegated access to act as the configured users. Only authorize this for a project and accounts you are permitted to administer.
+Create a service-account JSON key only if your organization's policy permits key-based authentication. Store it locally as service-account.json in the project root.
 
-Create a service-account JSON key only if your organization's policy permits key-based authentication. Store it locally as service-account.json in the project root. Never upload the key to GitHub or share it in chat.
+Never upload the key to a source repository or share it in chat.
 
-4. Install the project on Windows
+4. Install the Project on Windows
 
 Open Command Prompt and run:
+
 
 bat
 cd C:\
@@ -65,82 +69,78 @@ py -m venv .venv
 
 .venv\Scripts\python.exe -m pip install --upgrade pip
 .venv\Scripts\python.exe -m pip install google-api-python-client google-auth
-
-
 Download or copy these local files into C:\WorkspaceMigrationTest:
 
 populate_workspace_advanced.py
 service-account.json
 users.txt
-
 The users.txt file must contain one authorized source test account per line.
 
 Example:
 
+
 text
 testuser1@your-source-domain.example
+Replace the example with a real test account address in your source workspace.
 
+5. Run a Small Pilot
 
-Replace the example with a real test account address in your source Workspace domain.
+From Command Prompt, run:
 
-5. Run a small pilot
-
-From Command Prompt:
 
 bat
 cd C:\WorkspaceMigrationTest
 .venv\Scripts\python.exe populate_workspace_advanced.py --emails 10 --files 5
+For one configured account, the script attempts to create 10 email messages and 5 storage files.
 
+Verify that the messages and files appear in the correct account. Inspect the following inventory files:
 
-For one configured account, the script attempts to create 10 Gmail messages and 5 Drive files.
+gmail_inventory.csv
+drive_inventory.csv
+The advanced script writes fresh inventory CSV files for the current execution. Back up earlier inventories before another run.
 
-Verify that the messages and files appear in the correct account. Also inspect gmail_inventory.csv and drive_inventory.csv.
+6. Generate a Larger Batch
 
-The advanced script writes fresh inventory CSVs for the current execution. Back up earlier inventories before another run.
+For one configured account, run:
 
-6. Generate a larger batch
-
-For one configured account:
 
 bat
 .venv\Scripts\python.exe populate_workspace_advanced.py --emails 2000 --files 500
+This requests 2,000 new email messages and 500 storage files for each account listed in users.txt.
 
+If five accounts are listed, the requested batch is:
 
-This requests 2,000 new Gmail messages and 500 new Drive files for each account listed in users.txt.
+10,000 email messages in total.
+2,500 storage files in total.
+These counts apply to each execution, not to final mailbox or storage totals. Existing pilot and advanced-test data remain in place.
 
-If five accounts are listed, the requested batch is 10,000 messages and 2,500 Drive files in total.
+Important: The current script does not resume safely after a partial failure and does not prevent duplicates across executions. If an error occurs, do not rerun the same command until you have checked the audit records and actual source data.
 
-The counts are per execution, not final mailbox totals. Existing pilot and advanced-test data remain in place.
-
-Important: The current script does not resume safely after partial failure and does not prevent duplicates across executions. If an error occurs, do not rerun the same command until you have checked the audit records and actual Google data.
-
-7. Add or remove test accounts
+7. Add or Remove Test Accounts
 
 Open users.txt in Notepad.
 
 To add an account, add its authorized source email address on a new line.
 
-To remove an account, delete its line.
-
-Save the file before running the script.
+To remove an account, delete its line and save the file.
 
 Example with two accounts:
+
 
 text
 testuser1@your-source-domain.example
 testuser2@your-source-domain.example
+The script processes every account in this file. Use a one-line users.txt file when running a batch for only one user.
 
+Removing an address from the file stops future script executions from targeting that account. It does not delete previously generated email messages, storage files, or permissions.
 
-The script processes every account in this file. Therefore, use a one-line users.txt file when you want to run a batch for just one user.
+Before adding another user, verify that the account exists in the source workspace and that the service account is authorized to act on it.
 
-Removing an address from the file only stops future script runs from targeting that account. It does not delete previously generated Gmail messages, Drive files, or permissions.
+8. Understand the Inventory Files
 
-Before adding another user, verify that the account exists in the source Workspace domain and that the service account is authorized to act on it.
+Email Inventory
 
-8. Understand the inventory files
-Gmail inventory
-
-gmail_inventory.csv contains fields such as:
+The gmail_inventory.csv file contains fields such as:
 
 Owner
 Correspondent
@@ -156,9 +156,9 @@ Attachment SHA256
 Gmail Message ID
 RFC822 Message ID
 Migration Test ID
-Drive inventory
+Storage Inventory
 
-drive_inventory.csv contains fields such as:
+The drive_inventory.csv file contains fields such as:
 
 Owner
 File Name
@@ -171,24 +171,23 @@ Scenario
 Sharing Type
 Sharing Detail
 Migration Test ID
+These inventories are generated records, not independent proof of successful migration. Some values describe the generated source content rather than data read back from the source service after storage.
 
-These are generated inventories, not independent proof of successful migration. Some values describe the generated source content rather than data read back from Google after storage.
-
-9. Validate CloudM Migrate
+9. Validate the Migration
 
 After generating the source test data:
 
-Confirm the Gmail messages and Drive files exist in the source accounts.
-Preserve the inventories from the batch being tested.
-Configure CloudM Migrate with the correct source-to-destination account mapping.
+Confirm that the email messages and storage files exist in the source accounts.
+Preserve the inventories associated with the batch being tested.
+Configure the migration process with the correct source-to-destination account mapping.
 Run the migration according to your organization's approved procedure.
 Inspect migration logs and errors.
 Compare source and destination message counts, attachments, file counts, file contents, and folder structure.
 Record any discrepancies for investigation.
+Do not treat the existence of an inventory file as confirmation that every object migrated successfully.
 
-Do not treat the inventory's presence alone as confirmation that every object migrated successfully.
+10. Security Rules
 
-10. Security rules
 Never commit service-account.json, private keys, access tokens, or passwords.
 Never commit a real users.txt file.
 Never commit sensitive inventories or migration logs.
@@ -197,37 +196,42 @@ Grant repository access only to colleagues who need it.
 Use a dedicated test project and synthetic data.
 Revoke test credentials when the project is no longer required.
 11. Troubleshooting
-Python is not recognized
 
-Try:
+Python Is Not Recognized
+
+Run:
+
 
 bat
 py --version
-
-
 If neither python nor py works, install Python and reopen Command Prompt.
 
-Service account file not found
+Service Account File Not Found
 
 Confirm that service-account.json exists in the directory containing the script.
 
-Authorization or permission errors
+Authorization or Permission Errors
 
-Check API enablement, the delegated client ID, authorized scopes, the impersonated user's address, and Workspace security policies.
+Check:
 
-Wrong number of users
+API enablement.
+The delegated client ID.
+Authorized OAuth scopes.
+The impersonated user's address.
+Workspace security policies.
+Incorrect Number of Users
 
 Check users.txt. It must contain the intended accounts, one per line. The advanced script accepts one or more accounts.
 
-Script stopped during execution
+Script Stopped During Execution
 
-Do not immediately repeat the full command. Check the latest output, inventory files, and actual source Gmail and Drive data first.
+Do not immediately repeat the full command. Check the latest output, inventory files, and actual source email and storage data first.
 
-Inventory CSVs were replaced
+Inventory CSV Files Were Replaced
 
 Restore the backup if needed. Copy previous inventories to a separate, protected location before running another batch.
 
-12. Recommended improvements
+12. Recommended Improvements
 
 Before using this project for repeated large-scale testing, implement:
 
@@ -236,11 +240,12 @@ Duplicate detection and idempotent batch handling.
 Inventory append mode with unique run IDs.
 Independent source verification and destination comparison.
 Genuine email threads and more realistic attachment formats.
-Controlled Drive-sharing tests between authorized test users.
+Controlled storage-sharing tests between authorized test users.
 Automated tests and pinned dependencies.
+These improvements must be implemented and tested before claiming that repeated executions are duplicate-safe.
 
-These improvements should be tested before claiming that repeated executions are duplicate-safe.
+13. License and Intended Use
 
-License and intended use
+This project is intended for authorized workspace migration testing using synthetic data.
 
-This project is intended for authorized Google Workspace migration testing with synthetic data. Follow your organization's security requirements and Google's applicable API policies.
+Follow your organization's security requirements and all applicable API policies. Use the project only with accounts, data, and infrastructure you are authorized to administer.
